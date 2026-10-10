@@ -1,5 +1,4 @@
 const config = {
-
   //Live Server (Old Payana)....
   // apiGetVersion: 'https://etcdriverapp.in/WebApi/App/Version',
   // apiGetOtp: 'https://etcdriverapp.in/WebApi/App/GetOtp?ph=',
@@ -73,41 +72,25 @@ const config = {
   apiPostErrReport: 'https://etcdriverapp.in/TravelExApi/App/ErrReport?did=',
   apiPostUpload: 'https://etcdriverapp.in/TravelExApi/App/Upload?tid=',
   apiGetIdle: 'https://etcdriverapp.in/TravelExApi/App/idle?tid=',
-  apiPostTripHistory: 'https://etcdriverapp.in/TravelExApi/App/TripHistory?did=',
-
-  // Local Development Server(221) (Fallback)....
-  apiGetVersionAlt: 'https://etcdriverapp.in/TravelExApi/App/Version',
-  apiGetOtpAlt: 'https://etcdriverapp.in/TravelExApi/App/GetOtp?ph=',
-  apiUrlAlt: 'https://etcdriverapp.in/TravelExApi/App/',
-  apiPostBookingsAlt: 'https://etcdriverapp.in/TravelExApi/App/Bookings?did=',
-  apiPostKmReadingAlt:
-    'https://etcdriverapp.in/TravelExApi/App/KmReading?tripNo=',
-  apiPostLocationAlt: 'https://etcdriverapp.in/TravelExApi/App/Location?loc=',
-  apiGetStatusAlt: 'https://etcdriverapp.in/TravelExApi/App/Status?tripNo=',
-  apiPostFinalSubmitAlt:
-    'https://etcdriverapp.in/TravelExApi/App/Complete?tid=',
-  apiPostErrReportAlt: 'https://etcdriverapp.in/TravelExApi/App/ErrReport?did=',
-  apiPostUploadAlt: 'https://etcdriverapp.in/TravelExApi/App/Upload?tid=',
-  apiGetIdleAlt: 'https://etcdriverapp.in/TravelExApi/App/idle?tid=',
-  apiPostTripHistoryAlt:
+  apiPostTripHistory:
     'https://etcdriverapp.in/TravelExApi/App/TripHistory?did=',
 
-  // // ------------------------------------------------------------------------------ 
-  // //TravelEx Database(Alternate http Server)....
-  // apiGetVersionAlt: 'http://13.201.219.65/TravelExApi/App/Version',
-  // apiGetOtpAlt: 'http://13.201.219.65/TravelExApi/App/GetOtp?ph=',
-  // apiUrlAlt: 'http://13.201.219.65/TravelExApi/App/',
-  // apiPostBookingsAlt: 'http://13.201.219.65/TravelExApi/App/Bookings?did=',
-  // apiPostKmReadingAlt: 'http://13.201.219.65/TravelExApi/App/KmReading?tripNo=',
-  // apiPostLocationAlt: 'http://13.201.219.65/TravelExApi/App/Location?loc=',
-  // apiGetStatusAlt: 'http://13.201.219.65/TravelExApi/App/Status?tripNo=',
-  // apiPostFinalSubmitAlt: 'http://13.201.219.65/TravelExApi/App/Complete?tid=',
-  // apiPostErrReportAlt: 'http://13.201.219.65/TravelExApi/App/ErrReport?did=',
-  // apiPostUploadAlt: 'http://13.201.219.65/TravelExApi/App/Upload?tid=',
-  // apiGetIdleAlt: 'http://13.201.219.65/TravelExApi/App/idle?tid=',
-  // apiPostTripHistoryAlt: 'http://13.201.219.65/TravelExApi/App/TripHistory?did=',
   // ------------------------------------------------------------------------------
-
+  //TravelEx Database(Alternate http Server)....
+  apiGetVersionAlt: 'http://13.201.219.65/TravelExApi/App/Version',
+  apiGetOtpAlt: 'http://13.201.219.65/TravelExApi/App/GetOtp?ph=',
+  apiUrlAlt: 'http://13.201.219.65/TravelExApi/App/',
+  apiPostBookingsAlt: 'http://13.201.219.65/TravelExApi/App/Bookings?did=',
+  apiPostKmReadingAlt: 'http://13.201.219.65/TravelExApi/App/KmReading?tripNo=',
+  apiPostLocationAlt: 'http://13.201.219.65/TravelExApi/App/Location?loc=',
+  apiGetStatusAlt: 'http://13.201.219.65/TravelExApi/App/Status?tripNo=',
+  apiPostFinalSubmitAlt: 'http://13.201.219.65/TravelExApi/App/Complete?tid=',
+  apiPostErrReportAlt: 'http://13.201.219.65/TravelExApi/App/ErrReport?did=',
+  apiPostUploadAlt: 'http://13.201.219.65/TravelExApi/App/Upload?tid=',
+  apiGetIdleAlt: 'http://13.201.219.65/TravelExApi/App/idle?tid=',
+  apiPostTripHistoryAlt:
+    'http://13.201.219.65/TravelExApi/App/TripHistory?did=',
+  // ------------------------------------------------------------------------------
 
   //Local Development Server(221)....
   // apiServer: '221',
@@ -138,7 +121,6 @@ const config = {
   // apiGetIdleAlt: 'http://192.168.1.13:8095/WebApi/App/idle?tid=',
   // apiPostTripHistoryAlt: 'http://192.168.1.13:8095/WebApi/App/TripHistory?did=',
 
-
   //Local Development Server(221)....
   // apiServer: '221',
   // apiGetVersion: 'http://192.168.0.221/WebApi/App/Version',
@@ -167,9 +149,9 @@ const config = {
   // apiPostUploadAlt: 'http://192.168.0.221/WebApi/App/Upload?tid=',
   // apiGetIdleAlt: 'http://192.168.0.221/WebApi/App/idle?tid=',
   // apiPostTripHistoryAlt: 'http://192.168.0.221/WebApi/App/TripHistory?did=',
-//---------------------------------------------------------------------------------------------
+  //---------------------------------------------------------------------------------------------
 
-   //Local Development Server(102)....
+  //Local Development Server(102)....
   // apiGetVersion: 'http://192.168.0.102/WebApi/App/Version',
   // apiGetOtp: 'http://192.168.0.102/WebApi/App/GetOtp?ph=',
   // apiUrl: 'http://192.168.0.102/WebApi/App/',
@@ -200,7 +182,7 @@ const config = {
   tomTomApiKey: 'zwkA3jHm1HwPDIbg1STbFDSGjT1YmNac',
   timeoutValue: '180000',
   connectionTimeoutValue: null,
-  get appVersion (){
+  get appVersion() {
     return `2.0.22(${config.apiServer})`;
   },
   trackInterval: null,
@@ -208,7 +190,8 @@ const config = {
   versionNote: '(2.0.16)Added Trip Drawer to Navigate to Trip List Page', // 2.0.16 on 02nd December 2025
   versionNote: '(2.0.17)Added VIP Indication',
   versionNote: '(2.0.18)Added Missing Timeouts in Pickedup and Drop Screen',
-  versionNote: '(2.0.19)LatLongCalcTime is assigned based on Duty Type LOCAL/OUTSTATION',
+  versionNote:
+    '(2.0.19)LatLongCalcTime is assigned based on Duty Type LOCAL/OUTSTATION',
   versionNote: '(2.0.20)Added Geometry Logic to plot Map on Roadways.',
   versionNote: '(2.0.21)Improved Error Logs and Alerts.',
   versionNote: '(2.0.22)Improved Verify OTP Logic in Login Screen.',
@@ -216,14 +199,14 @@ const config = {
 
 export const MAPPLS_CONFIG = {
   // ETC Production Account..
-  CLIENT_ID:null,
-  CLIENT_SECRET:null,
-  API_KEY:null,
-  BASE_URL_OAUTH:null,
-  BASE_URL_GEOCODE:null,
-  BASE_URL_PLACE_DETAIL:null,
-  BASE_URL_REVERSE_GEOCODE:null,
-  BASE_URL_DISTANCE:null,
+  CLIENT_ID: null,
+  CLIENT_SECRET: null,
+  API_KEY: null,
+  BASE_URL_OAUTH: null,
+  BASE_URL_GEOCODE: null,
+  BASE_URL_PLACE_DETAIL: null,
+  BASE_URL_REVERSE_GEOCODE: null,
+  BASE_URL_DISTANCE: null,
   TOKEN_STORAGE_KEY: 'mappls_oauth_token',
 };
 
@@ -237,7 +220,7 @@ export const Colors = {
   cardBackground: '#FFFFFF', // Pure white for contrast and clarity
   actionButtons: '#355E3B',
   buttons: '#0c4160',
-  completeCardBg:'#FAFDF8',
+  completeCardBg: '#FAFDF8',
 
   // Text Colors
   text: '#2E2E2E', // Neutral deep gray – less harsh than black
