@@ -10,7 +10,9 @@ import {
   AppState,
   BackHandler,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
+import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import {NavigationContainer} from '@react-navigation/native';
@@ -316,9 +318,14 @@ const App = () => {
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>
-      <TranslationProvider>
-        <Navigator />
-      </TranslationProvider>
+      <SafeAreaProvider>
+        <SafeAreaView style={{flex: 1, backgroundColor: '#065758'}}>
+          <StatusBar barStyle="light-content" backgroundColor="#065758" />
+          <TranslationProvider>
+            <Navigator />
+          </TranslationProvider>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
     // <>
     //   {isLoading ? (
