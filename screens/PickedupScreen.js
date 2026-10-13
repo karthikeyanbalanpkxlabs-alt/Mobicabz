@@ -598,7 +598,8 @@ const PickedupScreen1 = ({ route, language }) => {
           // );
           // Now for getTravelledDistance with time calculation
           const startTravelDistanceTime = performance.now(); // Start time for getTravelledDistance
-          let lengthInMeters;
+          // Stays 0 if the distance API fails, so start km isn't sent as NaN
+          let lengthInMeters = 0;
 
           try {
             // const {distance: calculatedDistance} = await getTravelledDistance(
@@ -792,15 +793,26 @@ const PickedupScreen1 = ({ route, language }) => {
           //   pickedupLatLong,
           // );
           // Wrap the distance calculation:
-          const { lengthInMeters } = await Promise.race([
-            getTravelledDistance(startLatLongArray, pickedupLatLong),
-            new Promise((_, reject) =>
-              setTimeout(
-                () => reject(new Error('Distance API timeout')),
-                20000,
+          // startLatLongArray is null in this branch, so measure from the garage.
+          // getTravelledDistance returns {distance, duration} or null on failure.
+          let lengthInMeters = 0;
+          try {
+            const result = await Promise.race([
+              getTravelledDistance(garageLatLong, pickedupLatLong),
+              new Promise((_, reject) =>
+                setTimeout(
+                  () => reject(new Error('Distance API timeout')),
+                  20000,
+                ),
               ),
-            ),
-          ]);
+            ]);
+            lengthInMeters = result?.distance ?? 0;
+          } catch (error) {
+            console.warn('Failed to getTravelledDistance:', error.message);
+            log(
+              `${params.tripNo}: ERROR - PICKEDUP - sendPickupKmReadings - Failed to getTravelledDistance from garage: ${error.message}`,
+            );
+          }
           const distance = lengthInMeters / 1000;
           const startKmReading = parseFloat(pickupKmReadings) - distance;
           console.log('Start Km reading: ', startKmReading);
@@ -1146,15 +1158,23 @@ const PickedupScreen1 = ({ route, language }) => {
                   // const startlatlong = await getLatLngFromAddress(
                   //   params.vendorAddress,
                   // );
-                  startlatlong = await Promise.race([
-                    getLatLngFromAddress(params.vendorAddress),
-                    new Promise((_, reject) =>
-                      setTimeout(
-                        () => reject(new Error('Geocoding timeout')),
-                        15000,
+                  // Vendor lat/long is optional here; don't block navigation if geocoding fails
+                  let startlatlong = null;
+                  try {
+                    startlatlong = await Promise.race([
+                      getLatLngFromAddress(params.vendorAddress),
+                      new Promise((_, reject) =>
+                        setTimeout(
+                          () => reject(new Error('Geocoding timeout')),
+                          15000,
+                        ),
                       ),
-                    ),
-                  ]);
+                    ]);
+                  } catch (error) {
+                    log(
+                      `${params.tripNo}: WARN - PICKEDUP - handlePickedup - Vendor geocoding failed: ${error.message}`,
+                    );
+                  }
 
                   const pickedupLatLong = {
                     latitude: position.coords.latitude,

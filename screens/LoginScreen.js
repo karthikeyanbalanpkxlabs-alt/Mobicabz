@@ -1053,6 +1053,9 @@ const LoginScreen = ({language, route}) => {
         await AsyncStorage.setItem('MAPPLS_CONFIG.API_KEY', m.API_KEY || '');
         await AsyncStorage.setItem('MAPPLS_CONFIG.BASE_URL_OAUTH', m.BASE_URL_OAUTH || '');
         await AsyncStorage.setItem('MAPPLS_CONFIG.BASE_URL_GEOCODE', m.BASE_URL_GEOCODE || '');
+        await AsyncStorage.setItem('MAPPLS_CONFIG.BASE_URL_PLACE_DETAIL', m.BASE_URL_PLACE_DETAIL || '');
+        await AsyncStorage.setItem('MAPPLS_CONFIG.BASE_URL_REVERSE_GEOCODE', m.BASE_URL_REVERSE_GEOCODE || '');
+        await AsyncStorage.setItem('MAPPLS_CONFIG.BASE_URL_DISTANCE', m.BASE_URL_DISTANCE || '');
       }
 
       // 4. PENDING TRIP LOGIC

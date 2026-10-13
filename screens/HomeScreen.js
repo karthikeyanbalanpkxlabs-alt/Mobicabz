@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,29 +14,29 @@ import {
   ToastAndroid,
   DeviceEventEmitter,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {faPhoneSquare} from '@fortawesome/free-solid-svg-icons';
+import { useNavigation } from '@react-navigation/native';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { faPhoneSquare } from '@fortawesome/free-solid-svg-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SQLite from 'react-native-sqlite-storage';
 import moment from 'moment';
 import Geolocation from '@react-native-community/geolocation';
-import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import getLocation from 'react-native-get-location';
 import FlowButton from '../components/FlowButton';
 import ImageCapture from '../components/ImageCapture';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import {log, readLog, sendLogFile} from '../components/Logger';
+import { log, readLog, sendLogFile } from '../components/Logger';
 import translations from '../translations';
 import config from '../config';
 import {
   startBackgroundService,
   stopBackgroundService,
 } from '../Threads/BackgroundTask';
-import {getDistance} from 'geolib';
-import {useFocusEffect} from '@react-navigation/native';
+import { getDistance } from 'geolib';
+import { useFocusEffect } from '@react-navigation/native';
 // import CallDetectorManager from 'react-native-call-detection';
 // import { startBackgroundGeolocation, stopBackgroundGeolocation } from '../Threads/BackgroundTask';
 // import BackgroundJob from 'react-native-background-actions';
@@ -95,7 +95,7 @@ import {useFocusEffect} from '@react-navigation/native';
 //   }
 // };
 
-const HomeScreen = ({route, language}) => {
+const HomeScreen = ({ route, language }) => {
   const lang = language || 'en';
   // const { tripNo, custName, custMobile, pickUpLoc, dropLoc, driverId} = route.params;
   const [params, setParams] = useState({});
@@ -169,7 +169,10 @@ const HomeScreen = ({route, language}) => {
           setParams(route.params || {}); // Fallback value
         }
       } catch (error) {
-        console.error('HomeScreen: Error retrieving params from AsyncStorage:', error);
+        console.error(
+          'HomeScreen: Error retrieving params from AsyncStorage:',
+          error,
+        );
       }
     };
 
@@ -368,12 +371,12 @@ const HomeScreen = ({route, language}) => {
   const getLocation = () => {
     Geolocation.getCurrentPosition(
       position => {
-        const {latitude, longitude} = position.coords;
+        const { latitude, longitude } = position.coords;
         setLat(latitude);
         setLong(longitude);
       },
       error => console.log(error),
-      {enableHighAccuracy: false, timeout: 20000, maximumAge: 1000}, // Set maximumAge to 0 to force fetching a fresh position
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 }, // Set maximumAge to 0 to force fetching a fresh position
     );
     return true;
   };
@@ -410,7 +413,7 @@ const HomeScreen = ({route, language}) => {
           },
         },
       ],
-      {cancelable: false},
+      { cancelable: false },
     );
   };
 
@@ -1308,7 +1311,7 @@ const HomeScreen = ({route, language}) => {
               },
             },
           ],
-          {cancelable: false},
+          { cancelable: false },
         );
         setIsArrivedLoading(false);
         return;
@@ -1329,7 +1332,7 @@ const HomeScreen = ({route, language}) => {
             },
           },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
       setIsArrivedLoading(false);
     }
@@ -1353,8 +1356,8 @@ const HomeScreen = ({route, language}) => {
       Alert.alert(
         'Low or No Network Connection',
         'Check your Inernet Connection and click Start again.',
-        [{text: 'Ok'}],
-        {cancelable: false},
+        [{ text: 'Ok' }],
+        { cancelable: false },
       );
       setIsStartLoading(false);
       return;
@@ -1686,8 +1689,8 @@ const HomeScreen = ({route, language}) => {
                   Alert.alert(
                     'Low or No Network Connection',
                     'Check your Internet Connection and click Arrived again.',
-                    [{text: 'Ok'}],
-                    {cancelable: false},
+                    [{ text: 'Ok' }],
+                    { cancelable: false },
                   );
                   setIsArrivedLoading(false);
                   return;
@@ -1729,7 +1732,7 @@ const HomeScreen = ({route, language}) => {
             },
           },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
     } catch (error) {
       console.error('handleArrived - Error handling arrival:', error);
@@ -1804,8 +1807,8 @@ const HomeScreen = ({route, language}) => {
                   Alert.alert(
                     'Low or No Network Connection',
                     'Check your Internet Connection and click Picked Up again.',
-                    [{text: 'Ok'}],
-                    {cancelable: false},
+                    [{ text: 'Ok' }],
+                    { cancelable: false },
                   );
                   setIsPickedupLoading(false);
                   return;
@@ -1849,7 +1852,7 @@ const HomeScreen = ({route, language}) => {
             },
           },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
     } catch (error) {
       console.error('Error handling pickup:', error);
@@ -2159,7 +2162,7 @@ const HomeScreen = ({route, language}) => {
               if (!getCompLoc) {
                 throw new Error('Failed to obtain complete location.');
               }
-              const completeLoc = {lat, long};
+              const completeLoc = { lat, long };
               setTripCompleteLoc(completeLoc);
               console.log(
                 'completeLoc' +
@@ -2215,7 +2218,7 @@ const HomeScreen = ({route, language}) => {
                     const curTime = getCurrentTime();
                     const timeStamp = curDate + ' ' + curTime;
                     const position = await getCurrentPosition();
-                    const {latitude, longitude} = position.coords;
+                    const { latitude, longitude } = position.coords;
                     const locationName = await reverseGeocode(
                       latitude,
                       longitude,
@@ -2290,14 +2293,13 @@ const HomeScreen = ({route, language}) => {
               setPickupKmReadings('');
               setPickupKmImageUri('');
               setCurrentStep(0);
-
             } catch (error) {
               console.error('Error during trip completion process:', error);
               Alert.alert(
                 'Low or No Network Connection',
                 'Check your internet connection and click Start again.',
-                [{text: 'Ok'}],
-                {cancelable: false},
+                [{ text: 'Ok' }],
+                { cancelable: false },
               );
               setIsCompleteLoading(false);
               return;
@@ -2307,12 +2309,10 @@ const HomeScreen = ({route, language}) => {
           },
         },
       ],
-      {cancelable: false},
+      { cancelable: false },
     );
     log(`${params.tripNo}: HMS: handleCompleteTrip - Method completed.`);
   };
-
- 
 
   return (
     <View style={styles.container}>
@@ -2376,7 +2376,8 @@ const HomeScreen = ({route, language}) => {
           <View style={styles.thirdColumn}>
             <TouchableOpacity
               style={styles.call}
-              onPress={handlePressPhoneNumber}>
+              onPress={handlePressPhoneNumber}
+            >
               <FontAwesomeIcon
                 style={styles.callIcon}
                 icon={faPhoneSquare}
@@ -2462,7 +2463,8 @@ const HomeScreen = ({route, language}) => {
                   disabledStyle={
                     currentStep !== 5 ? styles.disabledButton : null
                     // currentStep !== 2 ? styles.disabledButton : null
-                  }></ImageCapture>
+                  }
+                ></ImageCapture>
               </View>
             </View>
             <View style={styles.l4}></View>
@@ -2482,7 +2484,8 @@ const HomeScreen = ({route, language}) => {
               onPress={handleArrived}
               disabled={currentStep !== 1}
               disabledStyle={currentStep !== 1 ? styles.disabledButton : null}
-              isLoading={isArrivedLoading}></FlowButton>
+              isLoading={isArrivedLoading}
+            ></FlowButton>
             <View style={styles.arrow} />
             <FlowButton
               title={translations[lang].pickedupButton}
@@ -2495,7 +2498,8 @@ const HomeScreen = ({route, language}) => {
                   ? styles.disabledButton
                   : null
               }
-              isLoading={isPickedupLoading}></FlowButton>
+              isLoading={isPickedupLoading}
+            ></FlowButton>
             <View style={styles.arrow} />
             <FlowButton
               title={translations[lang].getSignatureButton}
@@ -2508,7 +2512,8 @@ const HomeScreen = ({route, language}) => {
                   ? styles.disabledButton
                   : null
               }
-              isLoading={isCompleteLoading}></FlowButton>
+              isLoading={isCompleteLoading}
+            ></FlowButton>
           </View>
         </View>
         <View style={styles.signatureButtonView}></View>

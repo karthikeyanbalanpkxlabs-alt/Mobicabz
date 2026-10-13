@@ -73,6 +73,13 @@ export const getLatLngFromEloc = async eLoc => {
     const MAPPLS_PLACE_DETAIL_URL = await AsyncStorage.getItem(
       'MAPPLS_CONFIG.BASE_URL_PLACE_DETAIL',
     );
+    // Saved at login; missing if the driver logged in on an older build
+    if (!MAPPLS_PLACE_DETAIL_URL) {
+      log(
+        'MAPPLS_API - getLatLngFromEloc - Place detail URL missing, skipping',
+      );
+      return null;
+    }
     const token = await getOAuthToken();
     const url = `${MAPPLS_PLACE_DETAIL_URL}/${eLoc}`;
 
@@ -111,6 +118,13 @@ export const getAddressFromLatLng = async (lat, lng) => {
     const MAPPLS_REVERSE_GEOCODE_URL = await AsyncStorage.getItem(
       'MAPPLS_CONFIG.BASE_URL_REVERSE_GEOCODE',
     );
+    // Saved at login; missing if the driver logged in on an older build
+    if (!MAPPLS_REVERSE_GEOCODE_URL || lat == null || lng == null) {
+      log(
+        'MAPPLS_API - getAddressFromLatLng - Reverse geocode URL or lat/lng missing, skipping',
+      );
+      return 'Unknown Address';
+    }
     const token = await getOAuthToken();
     //const url = `${MAPPLS_CONFIG.BASE_URL_REVERSE_GEOCODE}?lat=${lat}&lng=${lng}`;
     const url = MAPPLS_REVERSE_GEOCODE_URL.replace(

@@ -6,6 +6,7 @@ export const getLatLngFromAddress = async (address) => {
     const eLoc = await getElocFromAddress(address);
     if (!eLoc) throw new Error('No eLoc found');
     const coords = await getLatLngFromEloc(eLoc);
+    if (!coords) throw new Error(`No coordinates found for eLoc ${eLoc}`);
     console.log('@@@@@@@ Obtained Lat Long from Address : '+coords.latitude+' '+coords.longitude);
     return coords;
   } catch (err) {
