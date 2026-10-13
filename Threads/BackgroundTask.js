@@ -1,14 +1,13 @@
 import BackgroundService from 'react-native-background-actions';
-import {PermissionsAndroid} from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import config from '../config';
-import {log, readLog, sendLogFile} from '../components/Logger';
-import {buildReverseGeocodingUrl} from '../services/apiHelpers';
-import {getAddressFromLatLng} from '../api/mapplsApi';
-import {saveLocation} from '../services/locationStorage';
+import { log, readLog, sendLogFile } from '../components/Logger';
+import { buildReverseGeocodingUrl } from '../services/apiHelpers';
+import { getAddressFromLatLng } from '../api/mapplsApi';
+import { saveLocation } from '../services/locationStorage';
 import { handleNewLocation, saveCoordinate } from '../services/distanceTracker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 const getCurrentPosition = () => {
   return new Promise((resolve, reject) => {
@@ -141,7 +140,7 @@ const checkIdleAndSendData = async tripNo => {
       log('BG_TASK Foreground location permission granted.');
 
       const position = await getCurrentPosition(); // Ensure getCurrentPosition is defined
-      const {latitude, longitude} = position.coords;
+      const { latitude, longitude } = position.coords;
       const locationName = await getAddressFromLatLng(latitude, longitude); // Ensure getAddressFromLatLng is defined
       const curDate = getCurrentDate(); // Ensure getCurrentDate is defined
       const curTime = getCurrentTime(); // Ensure getCurrentTime is defined
@@ -171,7 +170,7 @@ const checkIdleAndSendData = async tripNo => {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization':`Bearer ${authToken}`
+                Authorization: `Bearer ${authToken}`,
               },
             }),
             new Promise((_, reject) =>
@@ -256,11 +255,11 @@ const getLocationAndSendData = async tripNo => {
       log('Foreground location permission granted.');
 
       const position = await getCurrentPosition();
-      const {latitude, longitude} = position.coords;
+      const { latitude, longitude } = position.coords;
       const coordsString = `${longitude},${latitude}`;
       console.log('Location obtained:', latitude, longitude);
       log(`Location obtained: ${latitude}, ${longitude}`);
-      //await saveLocation(coordsString); // for multi-point Distance API 
+      //await saveLocation(coordsString); // for multi-point Distance API
       //await handleNewLocation(coordsString); // for Distance Matrix API
       await saveCoordinate(coordsString); // for Route API
       await sendLocationDataToAPI(latitude, longitude, tripNo);
@@ -334,7 +333,7 @@ const sendLocationDataToAPI = async (latitude, longitude, tripNo) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization':`Bearer ${authToken}`
+          Authorization: `Bearer ${authToken}`,
         },
       }),
       new Promise((_, reject) =>
@@ -412,9 +411,9 @@ const veryIntensiveTask = async taskDataArguments => {
 
   try {
     console.log('Received taskDataArguments:', taskDataArguments);
-    const {delay = 900000, tripNo = 'UNKNOWN'} = taskDataArguments || {};
+    const { delay = 900000, tripNo = 'UNKNOWN' } = taskDataArguments || {};
     console.log('Extracted delay:', delay, 'Extracted tripNo:', tripNo);
-    console.log('Background task started with:', {delay, tripNo});
+    console.log('Background task started with:', { delay, tripNo });
 
     await new Promise(async resolve => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
@@ -475,11 +474,13 @@ const veryIntensiveTask = async taskDataArguments => {
 // });
 
 const idleCheck = async taskDataArguments => {
+  debugger;
   console.log('IDLE CHECK - Simplfied task started');
   log('BG_TASK - idleCheck - STARTED (Simplified)');
   try {
-    const {delay = 600000, tripNo = 'UNKNOWN'} = taskDataArguments || {};
-    console.log('Idle Check started with:', {delay, tripNo});
+    const { delay = 600000, tripNo = 'UNKNOWN' } = taskDataArguments || {};
+    console.log('Idle Check started with:', { delay, tripNo });
+    debugger;
 
     await new Promise(async resolve => {
       for (let i = 0; BackgroundService.isRunning(); i++) {
@@ -515,6 +516,8 @@ const options = (tripNo, trackInterval) => ({
     delay: trackInterval * 60 * 1000,
     tripNo,
   },
+  // Required on Android 14+ (targetSdk 34+): starting without a type crashes natively
+  foregroundServiceType: ['location'],
   foreground: true,
   ongoing: true,
 });
@@ -539,11 +542,30 @@ const idleOptions = tripNo => ({
     delay: 10 * 60 * 1000,
     tripNo,
   },
+  // Required on Android 14+ (targetSdk 34+): starting without a type crashes natively
+  foregroundServiceType: ['location'],
   foreground: true,
   ongoing: true,
 });
 
+// A 'location' foreground service throws a native SecurityException if
+// location permission is not granted at start time, so check it first.
+const hasLocationPermission = async () => {
+  if (Platform.OS !== 'android') {
+    return true;
+  }
+  const fine = await PermissionsAndroid.check(
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  );
+  const coarse = await PermissionsAndroid.check(
+    PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+  );
+  return fine || coarse;
+};
+
 export const startIdleCheck = async tripNo => {
+  debugger;
+
   try {
     if (!tripNo) {
       console.error('Missing tripNo');
@@ -551,7 +573,7 @@ export const startIdleCheck = async tripNo => {
     }
 
     console.log('Starting idle check with tripNo:', tripNo);
-    log('BG_TASK - startIdleCheck - Starting idle check with tripNo:', tripNo);
+    // log('BG_TASK - startIdleCheck - Starting idle check with tripNo:', tripNo);
     const isRunning = BackgroundService.isRunning();
     console.log('isRunning:', isRunning);
     if (isRunning) {
@@ -559,16 +581,23 @@ export const startIdleCheck = async tripNo => {
       return;
     }
 
+    if (!(await hasLocationPermission())) {
+      console.warn('Location permission not granted. Idle check not started.');
+      log('BG_TASK - startIdleCheck - Location permission not granted.');
+      return;
+    }
+
     try {
+      debugger;
       await BackgroundService.start(idleCheck, idleOptions(tripNo));
     } catch (error) {
       console.error('Error starting idle check:', error);
-      log('BG_TASK - startIdleCheck - Error starting idle check:', error);
+      // log('BG_TASK - startIdleCheck - Error starting idle check:', error);
     }
     console.log('idle check started');
   } catch (error) {
     console.error('Error starting idle check service:', error);
-    log('BG_TASK - startIdleCheck - Error starting idle check service:', error);
+    // log('BG_TASK - startIdleCheck - Error starting idle check service:', error);
   }
 };
 
@@ -599,18 +628,27 @@ export const startBackgroundService = async tripNo => {
       return;
     }
 
+    if (!(await hasLocationPermission())) {
+      console.warn('Location permission not granted. Background service not started.');
+      log('BG_TASK - startBackgroundService - Location permission not granted.');
+      return;
+    }
+
     //const opts = options(tripNo);
     //console.log('Options prepared:', opts);
     //const trackInterval = Number(await AsyncStorage.getItem('TrackInterval'));
     let trackInterval = Number(await AsyncStorage.getItem('TrackInterval'));
     if (!trackInterval) {
-        trackInterval = 5;
+      trackInterval = 5;
     }
-    console.log('Obtained LatLong Track Interval : '+trackInterval);
-    log('BG_TASK : Obtained LatLong Track Interval : '+trackInterval);
+    console.log('Obtained LatLong Track Interval : ' + trackInterval);
+    log('BG_TASK : Obtained LatLong Track Interval : ' + trackInterval);
     //const trackInterval = 7; // 7-Minutes
     try {
-      await BackgroundService.start(veryIntensiveTask, options(tripNo,trackInterval));
+      await BackgroundService.start(
+        veryIntensiveTask,
+        options(tripNo, trackInterval),
+      );
       // await BackgroundService.start(testTask, opts);
       // await BackgroundService.start(simpleTask, testOptions);
     } catch (error) {

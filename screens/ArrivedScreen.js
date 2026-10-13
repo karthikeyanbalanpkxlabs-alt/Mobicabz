@@ -243,6 +243,10 @@ const ArrivedScreen = ({route, language}) => {
 
   // Store the parameters in AsyncStorage whenever they change
   useEffect(() => {
+    // Skip the initial empty state so it doesn't overwrite the stored trip params
+    if (!params || Object.keys(params).length === 0) {
+      return;
+    }
     AsyncStorage.setItem('homeParams', JSON.stringify(params));
   }, [params]);
 
@@ -351,18 +355,23 @@ const ArrivedScreen = ({route, language}) => {
     });
   };
 
-  const getLocation = () => {
-    Geolocation.getCurrentPosition(
-      position => {
-        const {latitude, longitude} = position.coords;
-        setLat(latitude);
-        setLong(longitude);
-      },
-      error => console.log(error),
-      {enableHighAccuracy: false, timeout: 20000, maximumAge: 1000}, // Set maximumAge to 0 to force fetching a fresh position
-    );
-    return true;
-  };
+  // Resolves with {latitude, longitude}, or null if location is unavailable
+  const getLocation = () =>
+    new Promise(resolve => {
+      Geolocation.getCurrentPosition(
+        position => {
+          const {latitude, longitude} = position.coords;
+          setLat(latitude);
+          setLong(longitude);
+          resolve({latitude, longitude});
+        },
+        error => {
+          console.log(error);
+          resolve(null);
+        },
+        {enableHighAccuracy: false, timeout: 20000, maximumAge: 1000}, // Set maximumAge to 0 to force fetching a fresh position
+      );
+    });
 
   const getCurrentDate = () => {
     const dateObj = new Date();
@@ -517,8 +526,24 @@ const ArrivedScreen = ({route, language}) => {
 
   const sendArrivedDetails = async () => {
     try {
-      getLocation();
-      console.log('Driver ID from Arrived Status:' + params.driverId);
+      // params state can still be empty if it hasn't loaded yet, so fall back to storage
+      let tripParams = params;
+      if (!tripParams.tripNo || !tripParams.driverId) {
+        const storedParams = await AsyncStorage.getItem('homeParams');
+        tripParams = storedParams ? JSON.parse(storedParams) : {};
+      }
+      if (!tripParams.tripNo || !tripParams.driverId) {
+        log(
+          'ERROR - ARRIVED: sendArrivedDetails - tripNo/driverId missing, not sending status',
+        );
+        return false;
+      }
+
+      // Wait for the position; lat/long state won't be updated until the next render
+      const coords = await getLocation();
+      const curLat = coords ? coords.latitude : lat;
+      const curLong = coords ? coords.longitude : long;
+      console.log('Driver ID from Arrived Status:' + tripParams.driverId);
       console.log('Current Time on Getting Customer Status: ', currentTime);
 
       let arrivedTimeStamp = arrivedTime !== null ? arrivedTime : currentTime;
@@ -526,17 +551,17 @@ const ArrivedScreen = ({route, language}) => {
       const makeApiCall = async baseUrl => {
         const apiUrl =
           baseUrl +
-          params.tripNo +
+          tripParams.tripNo +
           '&did=' +
-          params.driverId +
+          tripParams.driverId +
           '&dt=' +
           arrivedTimeStamp +
           '&status=ARRIVED&lat=' +
-          lat +
+          curLat +
           '&lon=' +
-          long;
+          curLong;
         log(
-          `${params.tripNo}: ARRIVED: sendArrivedDetails - Sending Arrived Details URL: ${apiUrl}`,
+          `${tripParams.tripNo}: ARRIVED: sendArrivedDetails - Sending Arrived Details URL: ${apiUrl}`,
         );
         console.log('Get Customer Status URL: ', apiUrl);
         const authToken = await AsyncStorage.getItem('API_AUTH_TOKEN');

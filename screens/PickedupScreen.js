@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,9 +16,9 @@ import {
   ToastAndroid,
   DeviceEventEmitter,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import {
   faCar,
   faCircle,
@@ -32,7 +32,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SQLite from 'react-native-sqlite-storage';
 import moment from 'moment';
 import Geolocation from '@react-native-community/geolocation';
-import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import getLocation from 'react-native-get-location';
 import FlowButton from '../components/FlowButton';
 import ImageCapture from '../components/ImageCapture';
@@ -40,7 +40,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import NewHeader from '../components/NewHeader';
 import NewFooter from '../components/NewFooter';
-import {log, readLog, sendLogFile} from '../components/Logger';
+import { log, readLog, sendLogFile } from '../components/Logger';
 import translations from '../translations';
 import translationManager from '../translationManager';
 import config from '../config';
@@ -49,19 +49,19 @@ import {
   stopBackgroundService,
   startGps,
 } from '../Threads/BackgroundTask';
-import {getDistance} from 'geolib';
-import {useFocusEffect} from '@react-navigation/native';
+import { getDistance } from 'geolib';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   buildGeocodingUrl,
   buildReverseGeocodingUrl,
   buildRouteUrl,
 } from '../services/apiHelpers';
-import {Colors} from '../config';
-import {getLatLngFromAddress} from '../services/mapplsHelper';
-import {getAddressFromLatLng, getTravelledDistance} from '../api/mapplsApi';
-import {clearTravelledDistances} from '../services/distanceTracker';
+import { Colors } from '../config';
+import { getLatLngFromAddress } from '../services/mapplsHelper';
+import { getAddressFromLatLng, getTravelledDistance } from '../api/mapplsApi';
+import { clearTravelledDistances } from '../services/distanceTracker';
 
-const PickedupScreen1 = ({route, language}) => {
+const PickedupScreen1 = ({ route, language }) => {
   const lang = language || 'en';
   // const { tripNo, custName, custMobile, pickUpLoc, dropLoc, driverId} = route.params;
   const [params, setParams] = useState({});
@@ -185,6 +185,10 @@ const PickedupScreen1 = ({route, language}) => {
 
   // Store the parameters in AsyncStorage whenever they change
   useEffect(() => {
+    // Skip the initial empty state so it doesn't overwrite the stored trip params
+    if (!params || Object.keys(params).length === 0) {
+      return;
+    }
     AsyncStorage.setItem('homeParams', JSON.stringify(params));
   }, [params]);
 
@@ -302,12 +306,12 @@ const PickedupScreen1 = ({route, language}) => {
   const getLocation = () => {
     Geolocation.getCurrentPosition(
       position => {
-        const {latitude, longitude} = position.coords;
+        const { latitude, longitude } = position.coords;
         setLat(latitude);
         setLong(longitude);
       },
       error => console.log(error),
-      {enableHighAccuracy: false, timeout: 20000, maximumAge: 1000}, // Set maximumAge to 0 to force fetching a fresh position
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 }, // Set maximumAge to 0 to force fetching a fresh position
     );
     return true;
   };
@@ -345,7 +349,7 @@ const PickedupScreen1 = ({route, language}) => {
           },
         },
       ],
-      {cancelable: false},
+      { cancelable: false },
     );
   };
 
@@ -486,12 +490,16 @@ const PickedupScreen1 = ({route, language}) => {
       const curDate = getCurrentDate();
       const curTime = getCurrentTime();
       const timeStamp = curDate + ' ' + curTime;
-      const {latitude, longitude} = position.coords;
+      const { latitude, longitude } = position.coords;
       // const locationName = await getAddressFromLatLng(latitude, longitude);
       const locationName = await Promise.race([
-      getAddressFromLatLng(latitude, longitude),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Address timeout')), 15000))
-      ]).catch(() => `Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+        getAddressFromLatLng(latitude, longitude),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Address timeout')), 15000),
+        ),
+      ]).catch(
+        () => `Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`,
+      );
       console.log('Location Name from handlePickedup:', locationName);
 
       const queryStringValue = `${params.tripNo}|$|${timeStamp}|$|${latitude}|$|${longitude}|$|${locationName}`;
@@ -505,8 +513,10 @@ const PickedupScreen1 = ({route, language}) => {
           try {
             // startLatLongArray = await getLatLngFromAddress(address);
             startLatLongArray = await Promise.race([
-            getLatLngFromAddress(address),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Geocoding timeout')), 15000))
+              getLatLngFromAddress(address),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Geocoding timeout')), 15000),
+              ),
             ]);
           } catch (error) {
             console.warn(
@@ -527,8 +537,10 @@ const PickedupScreen1 = ({route, language}) => {
           try {
             //startLatLongArray = await getLatLngFromAddress(address);
             startLatLongArray = await Promise.race([
-            getLatLngFromAddress(address),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Geocoding timeout')), 15000))
+              getLatLngFromAddress(address),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Geocoding timeout')), 15000),
+              ),
             ]);
           } catch (error) {
             console.warn(
@@ -596,8 +608,13 @@ const PickedupScreen1 = ({route, language}) => {
 
             // Wrap the distance calculation:
             const { distance: calculatedDistance } = await Promise.race([
-            getTravelledDistance(startLatLongArray, pickedupLatLong),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Distance API timeout')), 20000))
+              getTravelledDistance(startLatLongArray, pickedupLatLong),
+              new Promise((_, reject) =>
+                setTimeout(
+                  () => reject(new Error('Distance API timeout')),
+                  20000,
+                ),
+              ),
             ]);
             lengthInMeters = calculatedDistance;
           } catch (error) {
@@ -775,9 +792,14 @@ const PickedupScreen1 = ({route, language}) => {
           //   pickedupLatLong,
           // );
           // Wrap the distance calculation:
-          const {lengthInMeters} = await Promise.race([
-          getTravelledDistance(startLatLongArray, pickedupLatLong),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Distance API timeout')), 20000))
+          const { lengthInMeters } = await Promise.race([
+            getTravelledDistance(startLatLongArray, pickedupLatLong),
+            new Promise((_, reject) =>
+              setTimeout(
+                () => reject(new Error('Distance API timeout')),
+                20000,
+              ),
+            ),
           ]);
           const distance = lengthInMeters / 1000;
           const startKmReading = parseFloat(pickupKmReadings) - distance;
@@ -798,7 +820,7 @@ const PickedupScreen1 = ({route, language}) => {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'multipart/form-data',
-                  'Authorization': `Bearer ${authToken}`,
+                  Authorization: `Bearer ${authToken}`,
                 },
                 body: formData,
               }),
@@ -1003,7 +1025,7 @@ const PickedupScreen1 = ({route, language}) => {
               },
             },
           ],
-          {cancelable: false},
+          { cancelable: false },
         );
         setIsArrivedLoading(false);
         return;
@@ -1024,7 +1046,7 @@ const PickedupScreen1 = ({route, language}) => {
             },
           },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
       setIsArrivedLoading(false);
     }
@@ -1087,8 +1109,8 @@ const PickedupScreen1 = ({route, language}) => {
                       'alertLocationPermission',
                     ),
                     translationManager.getTranslation('alertEnableLocation'),
-                    [{text: 'Ok'}],
-                    {cancelable: false},
+                    [{ text: 'Ok' }],
+                    { cancelable: false },
                   );
                   setIsPickedupLoading(false);
                   return;
@@ -1099,8 +1121,8 @@ const PickedupScreen1 = ({route, language}) => {
                     translationManager.getTranslation(
                       'alertCheckNetworkandTry',
                     ),
-                    [{text: 'Ok'}],
-                    {cancelable: false},
+                    [{ text: 'Ok' }],
+                    { cancelable: false },
                   );
                   setIsPickedupLoading(false);
                   return;
@@ -1125,8 +1147,13 @@ const PickedupScreen1 = ({route, language}) => {
                   //   params.vendorAddress,
                   // );
                   startlatlong = await Promise.race([
-                  getLatLngFromAddress(params.vendorAddress),
-                  new Promise((_, reject) => setTimeout(() => reject(new Error('Geocoding timeout')), 15000))
+                    getLatLngFromAddress(params.vendorAddress),
+                    new Promise((_, reject) =>
+                      setTimeout(
+                        () => reject(new Error('Geocoding timeout')),
+                        15000,
+                      ),
+                    ),
                   ]);
 
                   const pickedupLatLong = {
@@ -1172,8 +1199,8 @@ const PickedupScreen1 = ({route, language}) => {
                     translationManager.getTranslation(
                       'alertSomethingWentWrong',
                     ),
-                    [{text: 'Ok'}],
-                    {cancelable: false},
+                    [{ text: 'Ok' }],
+                    { cancelable: false },
                   );
                 }
               } finally {
@@ -1183,26 +1210,35 @@ const PickedupScreen1 = ({route, language}) => {
             },
           },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
     } catch (error) {
       console.error('Error handling pickup:', error);
-      log(`${params.tripNo}: PICKEDUP - handlePickedUp -Error handling pickup:', ${error}, ${error.message}`);
+      log(
+        `${params.tripNo}: PICKEDUP - handlePickedUp -Error handling pickup:', ${error}, ${error.message}`,
+      );
       setIsPickedupLoading(false);
     }
     log(`${params.tripNo}: PICKEDUP - handlePickedUp - Method Completed.`);
   };
   return (
     <KeyboardAvoidingView
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
-      <NewHeader showTripDrawer={true} currentTripId={params.tripNo} currentDriverId={params.driverId} currentScreen={'PICKEDUP'}/>
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <NewHeader
+        showTripDrawer={true}
+        currentTripId={params.tripNo}
+        currentDriverId={params.driverId}
+        currentScreen={'PICKEDUP'}
+      />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
-          contentContainerStyle={{flexGrow: 1}}
-          keyboardShouldPersistTaps="handled">
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.container}>
             {/* Date/Time Display */}
             <View style={styles.datetime}>
@@ -1230,7 +1266,8 @@ const PickedupScreen1 = ({route, language}) => {
                 <View style={styles.row} key={index}>
                   <Text
                     allowFontScaling={false}
-                    style={styles.tripDetailsLabel}>
+                    style={styles.tripDetailsLabel}
+                  >
                     {item.label}:
                   </Text>
                   <Text allowFontScaling={false} style={styles.tripDetailsData}>
@@ -1250,7 +1287,8 @@ const PickedupScreen1 = ({route, language}) => {
                   </Text>
                   <TouchableOpacity
                     style={styles.callButton}
-                    onPress={() => handlePressPhoneNumber('Customer')}>
+                    onPress={() => handlePressPhoneNumber('Customer')}
+                  >
                     <FontAwesomeIcon
                       icon={faPhoneSquare}
                       size={18}
@@ -1300,7 +1338,8 @@ const PickedupScreen1 = ({route, language}) => {
                   </Text>
                   <TouchableOpacity
                     style={styles.callButton}
-                    onPress={() => handlePressPhoneNumber('Booker')}>
+                    onPress={() => handlePressPhoneNumber('Booker')}
+                  >
                     <FontAwesomeIcon
                       icon={faPhoneSquare}
                       size={18}
@@ -1401,7 +1440,8 @@ const PickedupScreen1 = ({route, language}) => {
                   currentStep !== 0 && styles.disabledButton,
                 ]}
                 disabled={currentStep !== 0}
-                onPress={handlePickedUp}>
+                onPress={handlePickedUp}
+              >
                 <Text allowFontScaling={false} style={styles.startButtonText}>
                   {isPickedupLoading
                     ? translationManager.getTranslation('loading')
@@ -1462,7 +1502,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: '3%',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
@@ -1593,7 +1633,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     marginVertical: '2%',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
@@ -1609,7 +1649,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 15,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,

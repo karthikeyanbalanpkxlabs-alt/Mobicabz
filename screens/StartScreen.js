@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,16 +14,16 @@ import {
   ToastAndroid,
   DeviceEventEmitter,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {faPhoneSquare} from '@fortawesome/free-solid-svg-icons';
-import {faCar, faCircle} from '@fortawesome/free-solid-svg-icons';
+import { useNavigation } from '@react-navigation/native';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { faPhoneSquare } from '@fortawesome/free-solid-svg-icons';
+import { faCar, faCircle } from '@fortawesome/free-solid-svg-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SQLite from 'react-native-sqlite-storage';
 import moment from 'moment';
 import Geolocation from '@react-native-community/geolocation';
-import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import getLocation from 'react-native-get-location';
 import FlowButton from '../components/FlowButton';
 import ImageCapture from '../components/ImageCapture';
@@ -31,7 +31,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import NewHeader from '../components/NewHeader';
 import NewFooter from '../components/NewFooter';
-import {log, readLog, sendLogFile} from '../components/Logger';
+import { log, readLog, sendLogFile } from '../components/Logger';
 import translations from '../translations';
 import translationManager from '../translationManager';
 import config from '../config';
@@ -39,12 +39,12 @@ import {
   startBackgroundService,
   stopBackgroundService,
 } from '../Threads/BackgroundTask';
-import {getDistance} from 'geolib';
-import {useFocusEffect} from '@react-navigation/native';
-import {Colors} from '../config';
-import {startIdleCheck} from '../Threads/BackgroundTask';
+import { getDistance } from 'geolib';
+import { useFocusEffect } from '@react-navigation/native';
+import { Colors } from '../config';
+import { startIdleCheck } from '../Threads/BackgroundTask';
 
-const StartScreen = ({route, language}) => {
+const StartScreen = ({ route, language }) => {
   const lang = language || 'en';
   // const { tripNo, custName, custMobile, pickUpLoc, dropLoc, driverId} = route.params;
   const [params, setParams] = useState({});
@@ -116,7 +116,8 @@ const StartScreen = ({route, language}) => {
         );
         log(
           'HomeScreen: Error retrieving params from AsyncStorage:',
-          error,error.message
+          error,
+          error.message,
         );
       }
     };
@@ -159,6 +160,10 @@ const StartScreen = ({route, language}) => {
 
   // Store the parameters in AsyncStorage whenever they change
   useEffect(() => {
+    // Skip the initial empty state so it doesn't overwrite the stored trip params
+    if (!params || Object.keys(params).length === 0) {
+      return;
+    }
     AsyncStorage.setItem('homeParams', JSON.stringify(params));
   }, [params]);
 
@@ -253,12 +258,12 @@ const StartScreen = ({route, language}) => {
   const getLocation = () => {
     Geolocation.getCurrentPosition(
       position => {
-        const {latitude, longitude} = position.coords;
+        const { latitude, longitude } = position.coords;
         setLat(latitude);
         setLong(longitude);
       },
       error => console.log(error),
-      {enableHighAccuracy: false, timeout: 20000, maximumAge: 1000}, // Set maximumAge to 0 to force fetching a fresh position
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 }, // Set maximumAge to 0 to force fetching a fresh position
     );
     return true;
   };
@@ -296,7 +301,7 @@ const StartScreen = ({route, language}) => {
           },
         },
       ],
-      {cancelable: false},
+      { cancelable: false },
     );
   };
 
@@ -397,7 +402,7 @@ const StartScreen = ({route, language}) => {
             method: 'GET',
             headers: {
               'Content-Type': 'multipart/form-data',
-              'Authorization' : `Bearer ${authToken}`
+              Authorization: `Bearer ${authToken}`,
             },
           }),
           new Promise((_, reject) =>
@@ -481,7 +486,11 @@ const StartScreen = ({route, language}) => {
       return granted === PermissionsAndroid.RESULTS.GRANTED;
     } catch (error) {
       console.error('Error requesting foreground location permission:', error);
-      log('Error requesting foreground location permission:', error, error.message);
+      log(
+        'Error requesting foreground location permission:',
+        error,
+        error.message,
+      );
       return false;
     }
   };
@@ -502,7 +511,11 @@ const StartScreen = ({route, language}) => {
       return granted === PermissionsAndroid.RESULTS.GRANTED;
     } catch (error) {
       console.error('Error requesting background location permission:', error);
-      log('Error requesting background location permission:', error, error.message);
+      log(
+        'Error requesting background location permission:',
+        error,
+        error.message,
+      );
       return false;
     }
   };
@@ -536,7 +549,7 @@ const StartScreen = ({route, language}) => {
               },
             },
           ],
-          {cancelable: false},
+          { cancelable: false },
         );
         setIsArrivedLoading(false);
         return;
@@ -557,19 +570,37 @@ const StartScreen = ({route, language}) => {
             },
           },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
       setIsArrivedLoading(false);
     }
   };
 
   const handleStart = async () => {
-    log(
-      `${params.tripNo}: START - handleStart - Trip has been started for TripID: ${params.tripNo}`,
-    );
-    log(`${params.tripNo}: START - handleStart - Start button clicked...`);
-    log(`${params.tripNo}: START - handleStart - Method being called.`);
+    debugger;
+    // log(
+    //   `${params.tripNo}: START - handleStart - Trip has been started for TripID: ${params.tripNo}`,
+    // );
+    // log(`${params.tripNo}: START - handleStart - Start button clicked...`);
+    // log(`${params.tripNo}: START - handleStart - Method being called.`);
     setIsStartLoading(true);
+
+    // Idle check runs as a location foreground service, which needs
+    // location permission granted before it starts.
+    if (!(await requestForegroundLocationPermission())) {
+      log(
+        `${params.tripNo}: START - handleStart - Foreground Location permission denied`,
+      );
+      Alert.alert(
+        translationManager.getTranslation('alertLocationPermission'),
+        translationManager.getTranslation('alertEnableLocation'),
+        [{ text: 'Ok', onPress: () => Linking.openSettings() }],
+        { cancelable: false },
+      );
+      setIsStartLoading(false);
+      return;
+    }
+
     setTripStatus('STARTED');
     await startIdleCheck(params.tripNo);
     // const destination = params.pickUpLoc;
@@ -582,8 +613,8 @@ const StartScreen = ({route, language}) => {
       Alert.alert(
         translationManager.getTranslation('alertLowNetwork'),
         translationManager.getTranslation('alertCheckNetworkandTry'),
-        [{text: 'Ok'}],
-        {cancelable: false},
+        [{ text: 'Ok' }],
+        { cancelable: false },
       );
       setIsStartLoading(false);
       return;
@@ -632,9 +663,14 @@ const StartScreen = ({route, language}) => {
 
   return (
     <View style={styles.container}>
-      <NewHeader showTripDrawer={true}  currentTripId={params.tripNo} currentDriverId={params.driverId} currentScreen={'START'}/>
+      <NewHeader
+        showTripDrawer={true}
+        currentTripId={params.tripNo}
+        currentDriverId={params.driverId}
+        currentScreen={'START'}
+      />
       {/* Date/Time Display */}
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <View style={styles.datetime}>
           <Text allowFontScaling={false} style={styles.datetimeText}>
             {currentDateTime}
@@ -678,7 +714,8 @@ const StartScreen = ({route, language}) => {
               </Text>
               <TouchableOpacity
                 style={styles.callButton}
-                onPress={() => handlePressPhoneNumber('Customer')}>
+                onPress={() => handlePressPhoneNumber('Customer')}
+              >
                 <FontAwesomeIcon icon={faPhoneSquare} size={18} color="green" />
               </TouchableOpacity>
             </View>
@@ -724,7 +761,8 @@ const StartScreen = ({route, language}) => {
               </Text>
               <TouchableOpacity
                 style={styles.callButton}
-                onPress={() => handlePressPhoneNumber('Booker')}>
+                onPress={() => handlePressPhoneNumber('Booker')}
+              >
                 <FontAwesomeIcon icon={faPhoneSquare} size={18} color="green" />
               </TouchableOpacity>
             </View>
@@ -781,7 +819,8 @@ const StartScreen = ({route, language}) => {
               currentStep !== 0 && styles.disabledButton,
             ]}
             onPress={handleStart}
-            disabled={currentStep !== 0}>
+            disabled={currentStep !== 0}
+          >
             <Text allowFontScaling={false} style={styles.startButtonText}>
               {isStartLoading
                 ? translationManager.getTranslation('loading')
@@ -838,7 +877,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: '3%',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
@@ -964,7 +1003,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     marginVertical: '2%',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,

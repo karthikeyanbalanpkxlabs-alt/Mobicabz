@@ -177,6 +177,10 @@ const DropScreen = ({route, language}) => {
 
   // Store the parameters in AsyncStorage whenever they change
   useEffect(() => {
+    // Skip the initial empty state so it doesn't overwrite the stored trip params
+    if (!params || Object.keys(params).length === 0) {
+      return;
+    }
     AsyncStorage.setItem('homeParams', JSON.stringify(params));
   }, [params]);
 
